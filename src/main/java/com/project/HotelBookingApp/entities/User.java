@@ -4,16 +4,7 @@ import java.util.Set;
 
 import com.project.HotelBookingApp.entities.enums.Roles;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,6 +30,9 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER) //this will create another table name=app_users_role
     @Enumerated(EnumType.STRING)
     private Set<Roles> role;
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Hotel> allHotels;
 
 
 
