@@ -29,4 +29,24 @@ public class HotelController {
         return ResponseEntity.ok(hotelById);
     }
 
+    @PutMapping(path = "/{hotelId}")
+    public ResponseEntity<HotelDto> updateHotelById(@PathVariable Long hotelId,
+                                                    @RequestBody HotelDto hotelDto){
+        HotelDto updated = hotelService.updateHotelById(hotelId, hotelDto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping(path = "/{hotelId}")
+    public ResponseEntity<Void> deleteHotelById(@PathVariable Long hotelId){
+        Boolean result = hotelService.deleteHotelById(hotelId);
+        log.info("Deleted the hotel by given Id: " + result);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(path = "/{hotelId}")
+    public ResponseEntity<HotelDto> activateHotel(@PathVariable Long hotelId){
+        log.info("Activating the hotel with id: " + hotelId);
+        HotelDto hotelDto = hotelService.activateHotel(hotelId);
+        return new ResponseEntity<>(hotelDto,HttpStatus.OK);
+    }
 }

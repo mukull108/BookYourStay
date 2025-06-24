@@ -2,11 +2,11 @@ package com.project.HotelBookingApp.entities;
 
 import java.time.LocalDateTime;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.util.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +24,9 @@ public class Hotel {
     private String name;
 
     private String city;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<Room> rooms;
 
     @Column(columnDefinition = "TEXT[]")
     private String[] photos;
