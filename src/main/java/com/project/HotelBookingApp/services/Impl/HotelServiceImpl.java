@@ -2,9 +2,11 @@ package com.project.HotelBookingApp.services.Impl;
 
 import com.project.HotelBookingApp.dtos.HotelDto;
 import com.project.HotelBookingApp.entities.Hotel;
+import com.project.HotelBookingApp.entities.Room;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
 import com.project.HotelBookingApp.repositories.HotelRepository;
 import com.project.HotelBookingApp.services.HotelService;
+import com.project.HotelBookingApp.services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class HotelServiceImpl implements HotelService {
     private final HotelRepository hotelRepository;
     private final ModelMapper mapper;
+    private final InventoryService inventoryService;
 //    private final Logger logger;
 
     @Override
@@ -54,11 +57,19 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public Boolean deleteHotelById(Long id) {
-        boolean exists = hotelRepository.
-                existsById(id);
-        if(!exists) throw new ResourceNotFoundException("Hotel doesn't exist with given Id!");
-        hotelRepository.deleteById(id);
-        //TODO: DELETE THE FUTURE INVENTORIES FOR THIS HOTEL
+        Hotel hotelEntity = hotelRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException
+                                ("Hotel was not available with given id: "+ id)
+                );
+
+        hotelRepository.delete(hotelEntity);
+
+        //DELETE THE FUTURE INVENTORIES FOR THIS HOTEL Rooms
+        for(Room room: hotelEntity.getRooms()){
+            inventoryService.deleteFutureInventories(room);
+        }
+
         return true;
     }
 
@@ -71,7 +82,11 @@ public class HotelServiceImpl implements HotelService {
                                 ("Hotel was not available with given id: "+ id)
                 );
         hotelEntity.setActive(true);
-        //Todo: create inventory for all the rooms for this hotel
+
+        //create inventory for all the rooms for this hotel
+        for(Room room:hotelEntity.getRooms()){
+            inventoryService.initializeRoomForAYear(room);
+        }
         Hotel hotel = hotelRepository.save(hotelEntity);
         return mapper.map(hotel,HotelDto.class);
     }

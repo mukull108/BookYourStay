@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,8 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -27,7 +26,10 @@ import lombok.Setter;
     name = "unique_hotel_room_date", 
     columnNames = {"hotel_id","room_id","date"}
     ))
-public class Inventories {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Inventory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
