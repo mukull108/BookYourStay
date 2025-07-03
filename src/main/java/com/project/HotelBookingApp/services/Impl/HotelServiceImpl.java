@@ -5,8 +5,10 @@ import com.project.HotelBookingApp.entities.Hotel;
 import com.project.HotelBookingApp.entities.Room;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
 import com.project.HotelBookingApp.repositories.HotelRepository;
+import com.project.HotelBookingApp.repositories.RoomRepository;
 import com.project.HotelBookingApp.services.HotelService;
 import com.project.HotelBookingApp.services.InventoryService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -19,6 +21,7 @@ public class HotelServiceImpl implements HotelService {
     private final HotelRepository hotelRepository;
     private final ModelMapper mapper;
     private final InventoryService inventoryService;
+    private final RoomRepository roomRepository;
 //    private final Logger logger;
 
     @Override
@@ -56,6 +59,7 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public Boolean deleteHotelById(Long id) {
         Hotel hotelEntity = hotelRepository.findById(id)
                 .orElseThrow(
@@ -63,31 +67,33 @@ public class HotelServiceImpl implements HotelService {
                                 ("Hotel was not available with given id: "+ id)
                 );
 
-        hotelRepository.delete(hotelEntity);
-
-        //DELETE THE FUTURE INVENTORIES FOR THIS HOTEL Rooms
+        //DELETE ALL INVENTORIES FOR THIS HOTEL ROOMS
         for(Room room: hotelEntity.getRooms()){
-            inventoryService.deleteFutureInventories(room);
+            inventoryService.deleteAllInventories(room);
+            roomRepository.deleteById(room.getId());
         }
-
+        hotelRepository.delete(hotelEntity);
         return true;
     }
 
     @Override
+    @Transactional
     public HotelDto activateHotel(Long id) {
-        log.info("Updating hotel by id: {}", id);
+        log.info("Activating hotel by id: {}", id);
         Hotel hotelEntity = hotelRepository.findById(id)
                 .orElseThrow(
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ id)
                 );
+        log.info("Fetched hotel with id: {}",hotelEntity.getId());
         hotelEntity.setActive(true);
 
         //create inventory for all the rooms for this hotel
         for(Room room:hotelEntity.getRooms()){
             inventoryService.initializeRoomForAYear(room);
         }
-        Hotel hotel = hotelRepository.save(hotelEntity);
-        return mapper.map(hotel,HotelDto.class);
+
+        hotelEntity = hotelRepository.save(hotelEntity);
+        return mapper.map(hotelEntity,HotelDto.class);
     }
 }

@@ -9,6 +9,7 @@ import com.project.HotelBookingApp.repositories.HotelRepository;
 import com.project.HotelBookingApp.repositories.RoomRepository;
 import com.project.HotelBookingApp.services.InventoryService;
 import com.project.HotelBookingApp.services.RoomService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -75,6 +76,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional
     public void deleteRoomById(Long roomId) {
         log.info("Deleting room with id: {}", roomId);
 
@@ -82,9 +84,11 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException
                         ("Room is not available with given Id: " + roomId)
                 );
+        //delete all future inventory for this room
+        inventoryService.deleteAllInventories(room);
+
+        //now, delete the room
         roomRepository.deleteById(roomId);
 
-        //delete all future inventory for this room
-        inventoryService.deleteFutureInventories(room);
     }
 }

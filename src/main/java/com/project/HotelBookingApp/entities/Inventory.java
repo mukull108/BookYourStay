@@ -56,7 +56,7 @@ public class Inventory {
     private BigDecimal surgeFactor;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price; // basePrice(from roomtype) * surgeFactor
+    private BigDecimal price; // basePrice(from room type) * surgeFactor
 
     @Column(nullable = false)
     private String city;
