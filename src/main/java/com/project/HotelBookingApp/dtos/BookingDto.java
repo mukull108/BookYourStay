@@ -13,8 +13,8 @@ import java.util.Set;
 @Data
 public class BookingDto {
     private Long id;
-    private Hotel hotel;
-    private Room room;
+//    private Hotel hotel;
+//    private Room room;
     private BookingStatus bookingStatus;
     private Set<GuestDto> guests;
     private Integer roomsCount;

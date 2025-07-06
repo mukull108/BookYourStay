@@ -2,13 +2,11 @@ package com.project.HotelBookingApp.services.Impl;
 
 import com.project.HotelBookingApp.dtos.BookingDto;
 import com.project.HotelBookingApp.dtos.BookingRequest;
+import com.project.HotelBookingApp.dtos.GuestDto;
 import com.project.HotelBookingApp.entities.*;
 import com.project.HotelBookingApp.entities.enums.BookingStatus;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
-import com.project.HotelBookingApp.repositories.BookingRepository;
-import com.project.HotelBookingApp.repositories.HotelRepository;
-import com.project.HotelBookingApp.repositories.InventoryRepository;
-import com.project.HotelBookingApp.repositories.RoomRepository;
+import com.project.HotelBookingApp.repositories.*;
 import com.project.HotelBookingApp.services.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
+    private final GuestRepository guestRepository;
     private final InventoryRepository inventoryRepository;
 
     private final RoomRepository roomRepository;
@@ -65,10 +65,8 @@ public class BookingServiceImpl implements BookingService {
         inventoryRepository.saveAll(inventoryList);
 
         //create the booking object
-        User user = new User(); //todo: remove this dummy user
-        user.setId(1L);
-        //todo: calculate dynamic pricing
 
+        //todo: calculate dynamic pricing
         Booking booking = Booking.builder()
                 .bookingStatus(BookingStatus.RESERVED)
                 .checkInDate(bookingRequest.getCheckInDate())
@@ -76,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
                 .roomsCount(bookingRequest.getRoomsCount())
                 .hotel(hotel)
                 .room(room)
-                .user(user)
+                .user(getCurrentUser())
                 .amount(BigDecimal.TEN) //todo: remove this temp price
                 .build();
         Booking savedBooking = bookingRepository.save(booking);
