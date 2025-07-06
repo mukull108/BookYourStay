@@ -82,4 +82,39 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         return modelMapper.map(savedBooking, BookingDto.class);
     }
+
+    @Override
+    public BookingDto addGuestsToBooking(List<GuestDto> guestDtoList, Long bookingId) {
+        log.info("Adding guests for booking with id : {},", bookingId);
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(()->new ResourceNotFoundException("Booking not found with given Id: " + bookingId));
+
+        if(hasBookingExpired(booking)){
+            throw new IllegalStateException("Booking has already expired!");
+        }
+        if(booking.getBookingStatus() != BookingStatus.RESERVED){
+            throw new IllegalStateException("Booking is not under reserved state, can not add guests");
+        }
+        for(GuestDto guestDto: guestDtoList){
+            Guest guest = modelMapper.map(guestDto, Guest.class);
+            guest.setUser(getCurrentUser());
+            guest = guestRepository.save(guest);
+            booking.getGuests().add(guest);
+
+        }
+        booking.setBookingStatus(BookingStatus.GUEST_ADDED);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        return modelMapper.map(savedBooking,BookingDto.class);
+    }
+
+    public boolean hasBookingExpired(Booking booking){
+        //booking created + 10 min < current time that means expired
+        return booking.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
+    }
+    public User getCurrentUser(){
+        User user = new User(); //todo: remove this dummy user
+        user.setId(1L);
+        return user;
+    }
 }
