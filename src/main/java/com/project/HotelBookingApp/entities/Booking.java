@@ -1,10 +1,12 @@
 package com.project.HotelBookingApp.entities;
 
 import java.lang.annotation.ElementType;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -23,12 +25,13 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Booking {
 
     @Id
@@ -66,6 +69,9 @@ public class Booking {
 
     @Column(nullable = false)
     private LocalDate checkOutDate;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
 
     @CreationTimestamp
     @Column(updatable = false)

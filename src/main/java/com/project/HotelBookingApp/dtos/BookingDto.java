@@ -15,7 +15,6 @@ public class BookingDto {
     private Long id;
     private Hotel hotel;
     private Room room;
-    private User user;
     private BookingStatus bookingStatus;
     private Set<GuestDto> guests;
     private Integer roomsCount;

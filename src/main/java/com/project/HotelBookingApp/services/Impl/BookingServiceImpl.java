@@ -2,20 +2,37 @@ package com.project.HotelBookingApp.services.Impl;
 
 import com.project.HotelBookingApp.dtos.BookingDto;
 import com.project.HotelBookingApp.dtos.BookingRequest;
+import com.project.HotelBookingApp.entities.*;
+import com.project.HotelBookingApp.entities.enums.BookingStatus;
+import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
 import com.project.HotelBookingApp.repositories.BookingRepository;
+import com.project.HotelBookingApp.repositories.HotelRepository;
+import com.project.HotelBookingApp.repositories.InventoryRepository;
+import com.project.HotelBookingApp.repositories.RoomRepository;
 import com.project.HotelBookingApp.services.BookingService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
+    private final InventoryRepository inventoryRepository;
 
+    private final RoomRepository roomRepository;
+    private final HotelRepository hotelRepository;
     private final BookingRepository bookingRepository;
+    private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public BookingDto initializeBooking(BookingRequest bookingRequest) {
         //hold the booking between given days -> hold the final price and hold the room for 10 mins
 
@@ -34,15 +51,15 @@ public class BookingServiceImpl implements BookingService {
         List<Inventory> inventoryList = inventoryRepository.findAndLockAvailableInventory(room.getId(),
                 bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate(),
                 bookingRequest.getRoomsCount());
+        long daysCount = ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate()) +1;
 
-        long daysCount = ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate());
         if(inventoryList.size() != daysCount){
             throw new IllegalStateException("Room is not available any more");
         }
 
         //reserve the room, update the booked count in inventory
         for(Inventory inventory:inventoryList){
-            inventory.setBookedCount(inventory.getBookedCount() + bookingRequest.getRoomsCount());
+            inventory.setReservedCount(inventory.getReservedCount() + bookingRequest.getRoomsCount());
         }
         //save the inventory
         inventoryRepository.saveAll(inventoryList);

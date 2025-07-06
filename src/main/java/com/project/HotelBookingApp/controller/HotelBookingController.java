@@ -16,10 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class HotelBookingController {
     private final BookingService bookingService;
 
-    @PostMapping
+    @PostMapping("/init")
     public ResponseEntity<BookingDto> initializeBooking(@RequestBody BookingRequest bookingRequest){
         BookingDto bookingDto = bookingService.initializeBooking(bookingRequest);
         return ResponseEntity.ok(bookingDto);
     }
+
 
 }
