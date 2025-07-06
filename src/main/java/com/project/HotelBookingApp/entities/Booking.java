@@ -1,6 +1,5 @@
 package com.project.HotelBookingApp.entities;
 
-import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
