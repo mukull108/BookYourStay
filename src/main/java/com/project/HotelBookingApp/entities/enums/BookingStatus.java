@@ -2,6 +2,9 @@ package com.project.HotelBookingApp.entities.enums;
 
 public enum BookingStatus {
     RESERVED,
+    GUEST_ADDED,
+    PAYMENT_PENDING,
     PENDING,
-    CANCELED
+    CANCELED,
+    EXPIRED
 }

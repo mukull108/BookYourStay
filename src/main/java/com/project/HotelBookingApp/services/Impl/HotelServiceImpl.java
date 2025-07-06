@@ -1,6 +1,8 @@
 package com.project.HotelBookingApp.services.Impl;
 
 import com.project.HotelBookingApp.dtos.HotelDto;
+import com.project.HotelBookingApp.dtos.HotelInfoDto;
+import com.project.HotelBookingApp.dtos.RoomDto;
 import com.project.HotelBookingApp.entities.Hotel;
 import com.project.HotelBookingApp.entities.Room;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
@@ -14,6 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +29,6 @@ public class HotelServiceImpl implements HotelService {
     private final ModelMapper mapper;
     private final InventoryService inventoryService;
     private final RoomRepository roomRepository;
-//    private final Logger logger;
 
     @Override
     public HotelDto createNewHotel(HotelDto hotelDto) {
@@ -95,5 +101,22 @@ public class HotelServiceImpl implements HotelService {
 
         hotelEntity = hotelRepository.save(hotelEntity);
         return mapper.map(hotelEntity,HotelDto.class);
+    }
+
+    @Override
+    public HotelInfoDto getHotelInfoById(Long hotelId) {
+        Hotel hotelById = hotelRepository.findById(hotelId)
+                .orElseThrow(()->
+                        new ResourceNotFoundException("Hotel was not found with id: "+ hotelId));
+
+        List<Room> rooms = hotelById.getRooms();
+        Set<RoomDto> roomDtos = rooms.stream().map(
+                (room)->
+                    mapper.map(room,RoomDto.class))
+                .collect(Collectors.toSet());
+
+        HotelDto hotelDto = mapper.map(hotelById,HotelDto.class);
+
+        return new HotelInfoDto(hotelDto,roomDtos);
     }
 }
