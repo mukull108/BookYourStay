@@ -82,6 +82,6 @@ public class InventoryServiceImpl implements InventoryService {
                 pageable
         );
 
-        return hotelPage.map((element) -> modelMapper.map(element, HotelPriceDto.class));
+        return hotelPage;
     }
 }
