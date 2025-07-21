@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.lang.ScopedValue;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -18,7 +17,7 @@ import java.util.Optional;
 public interface HotelMinPriceRepository extends JpaRepository<HotelMinPrice,Long> {
 
     @Query("""
-            SELECT DISTINCT com.project.HotelBookingApp.dtos.HotelPriceDto(i.hotel,AVG(i.minPrice))
+            SELECT new com.project.HotelBookingApp.dtos.HotelPriceDto(i.hotel,AVG(i.minPrice))
             FROM HotelMinPrice i
             WHERE i.hotel.city = :city
                 AND i.date BETWEEN :startDate AND :endDate

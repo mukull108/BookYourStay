@@ -7,6 +7,7 @@ import com.project.HotelBookingApp.repositories.HotelMinPriceRepository;
 import com.project.HotelBookingApp.repositories.HotelRepository;
 import com.project.HotelBookingApp.repositories.InventoryRepository;
 import com.project.HotelBookingApp.strategy.PricingService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class PricingUpdateService {
     private final HotelRepository hotelRepository;
     private final InventoryRepository inventoryRepository;
@@ -31,7 +33,8 @@ public class PricingUpdateService {
     private final PricingService pricingService;
 
     //Scheduler to update the inventory and HotelMinPrice table every hour
-    @Scheduled(cron = "*/5 * * * * *")
+//    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void updatePrice(){
         int page = 0;
         int batchSize = 100;
@@ -48,7 +51,7 @@ public class PricingUpdateService {
     }
 
     private void updateHotelPrice(Hotel hotel){
-        log.info("pdating hotel prices for hotel id: {}",hotel.getId());
+        log.info("Updating hotel prices for hotel id: {}",hotel.getId());
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = LocalDate.now().plusYears(1);
 
