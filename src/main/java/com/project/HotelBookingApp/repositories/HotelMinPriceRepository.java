@@ -1,6 +1,7 @@
 package com.project.HotelBookingApp.repositories;
 
 import com.project.HotelBookingApp.dtos.HotelPriceDto;
+import com.project.HotelBookingApp.entities.Hotel;
 import com.project.HotelBookingApp.entities.HotelMinPrice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.lang.ScopedValue;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Repository
 public interface HotelMinPriceRepository extends JpaRepository<HotelMinPrice,Long> {
@@ -30,4 +33,6 @@ public interface HotelMinPriceRepository extends JpaRepository<HotelMinPrice,Lon
             @Param("dateCount") Long dateCount,
             Pageable pageable
     );
+
+    Optional<HotelMinPrice> findByHotelAndDate(Hotel hotel, LocalDate date);
 }
