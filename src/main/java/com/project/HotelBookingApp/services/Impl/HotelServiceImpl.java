@@ -102,6 +102,11 @@ public class HotelServiceImpl implements HotelService {
                                 ("Hotel was not available with given id: "+ id)
                 );
         log.info("Fetched hotel with id: {}",hotelEntity.getId());
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user");
+        }
+
         hotelEntity.setActive(true);
 
         //create inventory for all the rooms for this hotel
