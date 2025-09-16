@@ -64,7 +64,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }catch (Exception e){
             //all the exceptions will be moved to servlet here
             handlerExceptionResolver.resolveException(request,response,null,e);
-
         }
 
     }

@@ -1,8 +1,11 @@
 package com.project.HotelBookingApp.advice;
 
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,7 +30,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError,HttpStatus.UNAUTHORIZED);
     }
 
-    //this will not work directly from here,for this we will have to pass exception from filter chain context to servlet,
+    //these 2 will not work directly from here,for this we will have to pass exception from filter chain context to servlet,
+
     // global exception handler will only handle exceptions on servlet context
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ApiError> handleJwtException(JwtException exception){
