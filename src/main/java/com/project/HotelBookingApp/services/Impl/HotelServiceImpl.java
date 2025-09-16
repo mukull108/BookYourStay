@@ -78,6 +78,10 @@ public class HotelServiceImpl implements HotelService {
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ id)
                 );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user");
+        }
 
         //DELETE ALL INVENTORIES FOR THIS HOTEL ROOMS
         for(Room room: hotelEntity.getRooms()){
