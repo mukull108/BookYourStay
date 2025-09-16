@@ -35,6 +35,8 @@ public class HotelServiceImpl implements HotelService {
         log.info("Creating new hotel with name: {}", hotelDto.getName());
         Hotel hotelEntity = mapper.map(hotelDto, Hotel.class);
         hotelEntity.setActive(false);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        hotelEntity.setOwner(user);
         Hotel savedHotel = hotelRepository.save(hotelEntity);
         return mapper.map(savedHotel, HotelDto.class);
     }
