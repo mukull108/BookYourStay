@@ -60,6 +60,10 @@ public class HotelServiceImpl implements HotelService {
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ id)
                 );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user");
+        }
         mapper.map(hotelDto,hotelEntity); //mapping everything from hotelDto to entity
         hotelEntity.setId(id);
         Hotel savedHotel = hotelRepository.save(hotelEntity);
