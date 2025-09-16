@@ -4,7 +4,9 @@ import com.project.HotelBookingApp.dtos.HotelDto;
 import com.project.HotelBookingApp.dtos.RoomDto;
 import com.project.HotelBookingApp.entities.Hotel;
 import com.project.HotelBookingApp.entities.Room;
+import com.project.HotelBookingApp.entities.User;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
+import com.project.HotelBookingApp.exceptions.UnauthorizedException;
 import com.project.HotelBookingApp.repositories.HotelRepository;
 import com.project.HotelBookingApp.repositories.RoomRepository;
 import com.project.HotelBookingApp.services.InventoryService;
@@ -13,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +39,10 @@ public class RoomServiceImpl implements RoomService {
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ hotelId)
                 );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user with id:"+ hotelId);
+        }
         Room roomEntity = mapper.map(roomDto, Room.class);
         roomEntity.setHotel(hotelEntity);
         roomEntity = roomRepository.save(roomEntity);
@@ -56,7 +63,10 @@ public class RoomServiceImpl implements RoomService {
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ hotelId)
                 );
-
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user with id:"+ hotelId);
+        }
         List<Room> rooms = hotelEntity.getRooms();
         List<RoomDto> roomDtoList = rooms
                 .stream()
@@ -84,6 +94,10 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException
                         ("Room is not available with given Id: " + roomId)
                 );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(room.getHotel().getOwner())){
+            throw new UnauthorizedException("User doesn't own this room with id:"+ roomId);
+        }
         //delete all future inventory for this room
         inventoryService.deleteAllInventories(room);
 

@@ -5,7 +5,9 @@ import com.project.HotelBookingApp.dtos.HotelInfoDto;
 import com.project.HotelBookingApp.dtos.RoomDto;
 import com.project.HotelBookingApp.entities.Hotel;
 import com.project.HotelBookingApp.entities.Room;
+import com.project.HotelBookingApp.entities.User;
 import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
+import com.project.HotelBookingApp.exceptions.UnauthorizedException;
 import com.project.HotelBookingApp.repositories.HotelRepository;
 import com.project.HotelBookingApp.repositories.RoomRepository;
 import com.project.HotelBookingApp.services.HotelService;
@@ -14,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,6 +52,10 @@ public class HotelServiceImpl implements HotelService {
                         () -> new ResourceNotFoundException
                                 ("Hotel was not available with given id: "+ id)
                 );
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotelEntity.getOwner())){
+            throw new UnauthorizedException("Hotel doesn't belong to this user");
+        }
         return mapper.map(hotelEntity,HotelDto.class);
     }
 
@@ -58,7 +65,7 @@ public class HotelServiceImpl implements HotelService {
         Hotel hotelEntity = hotelRepository.findById(id)
                 .orElseThrow(
                         () -> new ResourceNotFoundException
-                                ("Hotel was not available with given id: "+ id)
+                                ("User doesn't own this hotel with id: "+ id)
                 );
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(!user.equals(hotelEntity.getOwner())){
@@ -117,7 +124,7 @@ public class HotelServiceImpl implements HotelService {
         hotelEntity = hotelRepository.save(hotelEntity);
         return mapper.map(hotelEntity,HotelDto.class);
     }
-
+    //public method
     @Override
     public HotelInfoDto getHotelInfoById(Long hotelId) {
         Hotel hotelById = hotelRepository.findById(hotelId)
