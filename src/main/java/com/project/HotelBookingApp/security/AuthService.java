@@ -5,6 +5,7 @@ import com.project.HotelBookingApp.dtos.SignupRequestDto;
 import com.project.HotelBookingApp.dtos.UserDto;
 import com.project.HotelBookingApp.entities.User;
 import com.project.HotelBookingApp.entities.enums.Roles;
+import com.project.HotelBookingApp.exceptions.ResourceNotFoundException;
 import com.project.HotelBookingApp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -58,6 +59,14 @@ public class AuthService {
         arr[1] = jwtService.generateRefreshToken(user);
 
         return arr;
+
+    }
+
+    public String refreshAccessToken(String refreshToken){
+        Long userIdFromToken = jwtService.getUserIdFromToken(refreshToken);
+        User user = userRepository.findById(userIdFromToken).orElseThrow(
+                () -> new ResourceNotFoundException("User not found with id: " + userIdFromToken));
+        return jwtService.generateAccessToken(user);
 
     }
 

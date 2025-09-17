@@ -78,4 +78,7 @@ public class Booking {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @Column(unique = true)
+    private String paymentSessionId;
+
 }
