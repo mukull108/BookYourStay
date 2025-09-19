@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
                 .hotel(hotel)
                 .room(room)
                 .user(getCurrentUser())
-                .amount(BigDecimal.TEN) //todo: remove this temp price
+                .amount(BigDecimal.TEN.multiply(BigDecimal.TEN))
                 .build();
         Booking savedBooking = bookingRepository.save(booking);
         return modelMapper.map(savedBooking, BookingDto.class);
@@ -95,7 +95,12 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(()->new ResourceNotFoundException("Booking not found with given Id: " + bookingId));
 
+
         User user = getCurrentUser();
+        log.info("User for booking id {}, and user id {}",bookingId,user.getId());
+        log.info("User from booking is: {}", booking.getUser().getId());
+        log.info("booking status is: {}",booking.getBookingStatus());
+
         if(!user.equals(booking.getUser())){
             throw new UnauthorizedException("Booking doesn't belong to current user with id: "+ user.getId());
         }
@@ -129,7 +134,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Booking has already expired!");
         }
 
-        String sessionUrl = checkoutService.getCheckoutSession(booking, frontendUrl + "payments/success", frontendUrl + "payments/failure");
+        String sessionUrl = checkoutService.getCheckoutSession(booking, frontendUrl + "/payments/success", frontendUrl + "/payments/failure");
         booking.setBookingStatus(BookingStatus.PAYMENT_PENDING);
         bookingRepository.save(booking);
         return sessionUrl;

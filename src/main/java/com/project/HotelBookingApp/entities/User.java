@@ -38,7 +38,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Roles> role;
 
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "owner",fetch = FetchType.EAGER)
     private Set<Hotel> allHotels;
 
 
