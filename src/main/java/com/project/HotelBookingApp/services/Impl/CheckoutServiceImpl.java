@@ -54,7 +54,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                                     .setQuantity(1L)
                                     .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
                                             .setCurrency("inr")
-                                            .setUnitAmount(booking.getAmount().multiply(BigDecimal.valueOf(100)).longValue())
+                                            .setUnitAmount(booking.getAmount().multiply(BigDecimal.valueOf(100)).longValue()) //converting into paisa
                                             .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                     .setName(booking.getHotel().getName() + " : " + booking.getRoom().getType())
                                                     .setDescription("Booking ID: "+booking.getId())

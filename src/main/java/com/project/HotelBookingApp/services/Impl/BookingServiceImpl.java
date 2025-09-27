@@ -10,6 +10,8 @@ import com.project.HotelBookingApp.exceptions.UnauthorizedException;
 import com.project.HotelBookingApp.repositories.*;
 import com.project.HotelBookingApp.services.BookingService;
 import com.project.HotelBookingApp.services.CheckoutService;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ModelMapper modelMapper;
 
+    //payment related stuff
     private final CheckoutService checkoutService;
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -90,6 +93,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDto addGuestsToBooking(List<GuestDto> guestDtoList, Long bookingId) {
         log.info("Adding guests for booking with id : {},", bookingId);
         Booking booking = bookingRepository.findById(bookingId)
@@ -124,6 +128,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public String initiatePayments(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         User user = getCurrentUser(); //from security context holder
@@ -141,12 +146,39 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    @Transactional
+    public void capturePayment(Event event) {
+        if("checkout.session.completed".equals(event.getType())){
+            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
+            if(session!=null){
+                String sessionId = session.getId();
+                Booking booking =
+                        bookingRepository.findByPaymentSessionId(sessionId).orElseThrow(
+                                ()-> new ResourceNotFoundException("Booking not found for session ID: "+sessionId));
+                booking.setBookingStatus(BookingStatus.CONFIRMED);
+                bookingRepository.save(booking);
+
+                inventoryRepository.findAndLockReservedInventory(booking.getRoom().getId(),booking.getCheckInDate(),
+                        booking.getCheckOutDate(),booking.getRoomsCount()); //acquired the lock
+
+                inventoryRepository.confirmBooking(booking.getRoom().getId(), booking.getCheckInDate(),
+                        booking.getCheckOutDate(), booking.getRoomsCount()); //update the bookings
+
+                log.info("Booking confirmed for session ID: {}", sessionId);
+                log.info("Booking confirmed for booking ID: {}", booking.getId());
+            }
+        }else {
+            log.warn("Unhandled event type: {}", event.getType());
+        }
+
+    }
+
     public boolean hasBookingExpired(Booking booking){
         //booking created + 10 min < current time that means expired
         return booking.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
     public User getCurrentUser(){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return user;
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
