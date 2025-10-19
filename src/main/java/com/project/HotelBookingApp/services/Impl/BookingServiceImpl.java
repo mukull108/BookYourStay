@@ -189,6 +189,19 @@ public class BookingServiceImpl implements BookingService {
 
 
 
+        inventoryRepository.cancelBooking(booking.getRoom().getId(), booking.getCheckInDate(),
+                booking.getCheckOutDate(), booking.getRoomsCount()); //update the bookings
+
+        //handle the refund
+        try {
+            Session session = Session.retrieve(booking.getPaymentSessionId());
+            RefundCreateParams refundCreateParams = RefundCreateParams.builder()
+                    .setPaymentIntent(session.getPaymentIntent())
+                    .build();
+            Refund.create(refundCreateParams);
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean hasBookingExpired(Booking booking){
