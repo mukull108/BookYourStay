@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/webhooks")
+@RequestMapping("/webhook")
 @RequiredArgsConstructor
 public class WebHookController {
     private final BookingService bookingService;

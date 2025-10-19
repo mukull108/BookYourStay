@@ -149,6 +149,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void capturePayment(Event event) {
+        log.info("Event type {}", event.getType());
         if("checkout.session.completed".equals(event.getType())){
             Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
             if(session!=null){
