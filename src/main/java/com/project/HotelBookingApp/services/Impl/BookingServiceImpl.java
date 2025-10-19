@@ -10,6 +10,7 @@ import com.project.HotelBookingApp.exceptions.UnauthorizedException;
 import com.project.HotelBookingApp.repositories.*;
 import com.project.HotelBookingApp.services.BookingService;
 import com.project.HotelBookingApp.services.CheckoutService;
+import com.project.HotelBookingApp.strategy.PricingService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.Refund;
@@ -34,6 +35,8 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
     private final GuestRepository guestRepository;
     private final InventoryRepository inventoryRepository;
+
+    private final PricingService pricingService;
 
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
@@ -70,14 +73,12 @@ public class BookingServiceImpl implements BookingService {
         if(inventoryList.size() != daysCount){
             throw new IllegalStateException("Room is not available any more");
         }
-
         //reserve the room, update the booked count in inventory
         inventoryRepository.initBooking(room.getId(), bookingRequest.getCheckInDate()
                 ,bookingRequest.getCheckOutDate(),bookingRequest.getRoomsCount());
+        //calculate dynamic pricing
+        BigDecimal priceForOneRoom = pricingService.calculateTotalPrice(inventoryList);
 
-        //create the booking object
-
-        //todo: calculate dynamic pricing
         Booking booking = Booking.builder()
                 .bookingStatus(BookingStatus.RESERVED)
                 .checkInDate(bookingRequest.getCheckInDate())
