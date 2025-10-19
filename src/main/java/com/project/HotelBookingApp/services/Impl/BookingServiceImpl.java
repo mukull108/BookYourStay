@@ -188,6 +188,9 @@ public class BookingServiceImpl implements BookingService {
         }
 
 
+        //acquire the lock then cancel
+        inventoryRepository.findAndLockReservedInventory(booking.getRoom().getId(),booking.getCheckInDate(),
+                booking.getCheckOutDate(),booking.getRoomsCount()); //acquired the lock
 
         inventoryRepository.cancelBooking(booking.getRoom().getId(), booking.getCheckInDate(),
                 booking.getCheckOutDate(), booking.getRoomsCount()); //update the bookings
