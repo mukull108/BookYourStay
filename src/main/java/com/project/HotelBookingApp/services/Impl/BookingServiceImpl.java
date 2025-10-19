@@ -78,6 +78,7 @@ public class BookingServiceImpl implements BookingService {
                 ,bookingRequest.getCheckOutDate(),bookingRequest.getRoomsCount());
         //calculate dynamic pricing
         BigDecimal priceForOneRoom = pricingService.calculateTotalPrice(inventoryList);
+        BigDecimal totalPrice = priceForOneRoom.multiply(BigDecimal.valueOf(bookingRequest.getRoomsCount()));
 
         Booking booking = Booking.builder()
                 .bookingStatus(BookingStatus.RESERVED)
@@ -87,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
                 .hotel(hotel)
                 .room(room)
                 .user(getCurrentUser())
-                .amount(BigDecimal.TEN.multiply(BigDecimal.TEN))
+                .amount(totalPrice)
                 .build();
         Booking savedBooking = bookingRepository.save(booking);
         return modelMapper.map(savedBooking, BookingDto.class);
