@@ -175,6 +175,22 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    public void cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+        User user = getCurrentUser(); //from security context holder
+        if(!user.equals(booking.getUser())){
+            throw new UnauthorizedException("Booking doesn't belong to current user with id: "+ user.getId());
+        }
+        if(booking.getBookingStatus() != BookingStatus.CONFIRMED){
+            throw new RuntimeException("Only confirmed bookings can be canceled!!");
+        }
+
+
+
+    }
+
     public boolean hasBookingExpired(Booking booking){
         //booking created + 10 min < current time that means expired
         return booking.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
