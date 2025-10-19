@@ -10,8 +10,11 @@ import com.project.HotelBookingApp.exceptions.UnauthorizedException;
 import com.project.HotelBookingApp.repositories.*;
 import com.project.HotelBookingApp.services.BookingService;
 import com.project.HotelBookingApp.services.CheckoutService;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
+import com.stripe.param.RefundCreateParams;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -187,6 +190,8 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Only confirmed bookings can be canceled!!");
         }
 
+        booking.setBookingStatus(BookingStatus.CANCELED);
+        bookingRepository.save(booking);
 
         //acquire the lock then cancel
         inventoryRepository.findAndLockReservedInventory(booking.getRoom().getId(),booking.getCheckInDate(),
