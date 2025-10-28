@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public interface InventoryRepository extends JpaRepository<Inventory,Long> {
+
     void deleteByRoom(Room room);
 
     @Query("""
@@ -70,7 +71,7 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
     @Modifying
     @Query("""
             UPDATE Inventory i
-            SET i.reservedCount = i.reservedCount - :numberOfRooms,
+            SET i.reservedCount = i.reservedCount - :numberOfRooms
             WHERE i.room.id=:roomId
                 AND i.date BETWEEN :startDate AND :endDate
                 AND (i.totalCount - i.bookedCount - i.reservedCount) >= :numberOfRooms

@@ -6,6 +6,7 @@ import com.project.HotelBookingApp.dtos.GuestDto;
 import com.stripe.model.Event;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BookingService {
     BookingDto initializeBooking(BookingRequest bookingRequest);
@@ -17,4 +18,6 @@ public interface BookingService {
     void capturePayment(Event event);
 
     void cancelBooking(Long bookingId);
+
+    String getBookingStatus(Long bookingId);
 }

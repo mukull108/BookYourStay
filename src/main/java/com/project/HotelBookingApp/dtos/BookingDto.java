@@ -6,6 +6,7 @@ import com.project.HotelBookingApp.entities.User;
 import com.project.HotelBookingApp.entities.enums.BookingStatus;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -22,4 +23,5 @@ public class BookingDto {
     private LocalDate checkOutDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private BigDecimal amount;
 }

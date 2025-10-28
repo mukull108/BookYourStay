@@ -52,7 +52,6 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDto initializeBooking(BookingRequest bookingRequest) {
         //hold the booking between given days -> hold the final price and hold the room for 10 mins
-
         log.info("Initializing booking for Hotel : {}, room: {}, from {} to {}",
                 bookingRequest.getHotelId(),bookingRequest.getRoomId()
                 ,bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate());
@@ -68,14 +67,17 @@ public class BookingServiceImpl implements BookingService {
         List<Inventory> inventoryList = inventoryRepository.findAndLockAvailableInventory(room.getId(),
                 bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate(),
                 bookingRequest.getRoomsCount());
+
         long daysCount = ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(),bookingRequest.getCheckOutDate()) +1;
 
         if(inventoryList.size() != daysCount){
             throw new IllegalStateException("Room is not available any more");
         }
+
         //reserve the room, update the booked count in inventory
         inventoryRepository.initBooking(room.getId(), bookingRequest.getCheckInDate()
                 ,bookingRequest.getCheckOutDate(),bookingRequest.getRoomsCount());
+
         //calculate dynamic pricing
         BigDecimal priceForOneRoom = pricingService.calculateTotalPrice(inventoryList);
         BigDecimal totalPrice = priceForOneRoom.multiply(BigDecimal.valueOf(bookingRequest.getRoomsCount()));
@@ -209,6 +211,16 @@ public class BookingServiceImpl implements BookingService {
         } catch (StripeException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String getBookingStatus(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+        User user = getCurrentUser(); //from security context holder
+        if(!user.equals(booking.getUser())){
+            throw new UnauthorizedException("Booking doesn't belong to current user with id: "+ user.getId());
+        }
+        return booking.getBookingStatus().name();
     }
 
     public boolean hasBookingExpired(Booking booking){
